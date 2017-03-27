@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const PORT = process.env.PORT || 3000;
 const app = express();
 // TODO: Don't forget to set your own conString
-const conString = 'postgres://cameron:1234@localhost:5432/kilovolt';
+const conString = 'postgres://postgres:1234@localhost:5432/kilovolt';
 const client = new pg.Client(conString);
 client.connect();
 client.on('error', function(error) {
@@ -85,18 +85,45 @@ app.post('/articles', function(request, response) {
 });
 
 app.put('/articles/:id', function(request, response) {
-  client.query(
+  client.query(`
+    UPDATE authors
+    SET
+      author=$1,
+      "authorUrl"=$2
+    WHERE author_id=$3;
+    `,
+    [
+      request.body.author,
+      request.body.authorUrl,
+      request.body.author_id
+    ]
   // TODO: Write a SQL query to update an ***author*** record
   // TODO: Add the required values from the request as data for the SQL query to interpolate
-    `Thing1`,
-    [Thing2]
+  // `Thing1`,
+  //   [Thing2]
   )
   .then(function() {
     // TODO: Write a SQL query to update an **article*** record
     // TODO: Add the required values from the request as data for the SQL query to interpolate
-    client.query(
-      `Thing1`,
-      [Thing2]
+    client.query(`
+      UPDATE articles
+      SET
+        author_id=$1,
+        title=$2,
+        category= $3,
+        "publishedOn"=$4,
+        body=$5
+
+      WHERE article_id=$6;
+      `,
+      [
+        request.body.author_id,
+        request.body.title,
+        request.body.category,
+        request.body.publishedOn,
+        request.body.body,
+        request.params.id
+      ]
     )
   })
   .then(function() {
